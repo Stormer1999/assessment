@@ -6,27 +6,23 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.util.List;
+
 @Entity
-@Table(name = "lottery")
+@Table(name = "user_ticket")
 @Data
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class Lottery {
+public class UserTicket {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Size(min = 10, max = 10, message = "user_ticket id size is invalid")
     private Long id;
 
-    @Column(name = "ticket")
-    @Size(min = 6, max = 6, message = "tickets size must be 6 characters")
-    private String ticket;
+    @Column(name = "name")
+    private String name;
 
-    @Column(name = "price")
-    private Double price;
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "userTicket", cascade = CascadeType.ALL)
+    private List<Lottery> tickets;
 
-    @Column(name = "amount")
-    private Integer amount;
-
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "user_ticket_id")
-    private UserTicket userTicket;
 }
