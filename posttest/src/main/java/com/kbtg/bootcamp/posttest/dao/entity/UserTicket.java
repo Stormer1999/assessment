@@ -22,7 +22,8 @@ public class UserTicket {
     @Column(name = "name")
     private String name;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "userTicket", cascade = CascadeType.ALL)
+//    @OneToMany(fetch = FetchType.EAGER, mappedBy = "userTicket")
+    @OneToMany(mappedBy = "userTicket", cascade = CascadeType.ALL)
     private List<Lottery> tickets;
 
 }

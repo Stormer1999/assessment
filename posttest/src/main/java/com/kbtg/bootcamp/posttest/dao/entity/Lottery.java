@@ -16,7 +16,7 @@ public class Lottery {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "ticket")
+    @Column(name = "ticket", unique = true)
     @Size(min = 6, max = 6, message = "tickets size must be 6 characters")
     private String ticket;
 
@@ -26,7 +26,8 @@ public class Lottery {
     @Column(name = "amount")
     private Integer amount;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    //    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_ticket_id")
     private UserTicket userTicket;
 }
