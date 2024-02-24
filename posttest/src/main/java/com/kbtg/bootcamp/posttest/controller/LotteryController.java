@@ -1,10 +1,7 @@
 package com.kbtg.bootcamp.posttest.controller;
 
 import com.kbtg.bootcamp.posttest.dao.entity.Lottery;
-import com.kbtg.bootcamp.posttest.dto.LotteryRequestDto;
-import com.kbtg.bootcamp.posttest.dto.TicketIdResponseDto;
-import com.kbtg.bootcamp.posttest.dto.TicketListResponseDto;
-import com.kbtg.bootcamp.posttest.dto.TicketResponseDto;
+import com.kbtg.bootcamp.posttest.dto.*;
 import com.kbtg.bootcamp.posttest.service.LotteryService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -59,9 +56,13 @@ public class LotteryController {
         EXP04: As a user, I want to list all my lottery tickets So that I can see which one I have already bought and it cost
      */
     @GetMapping("/users/{userId}/lotteries")
-    public String listAllBoughtLottery(@PathVariable("userId") Long userId) {
+    public ResponseEntity<BoughLotteryResponse> listAllBoughtLottery(@PathVariable("userId") Long userId) {
+        // ["000001","000002","123456"]
+        //count = number
+        //cost = number
+        BoughLotteryResponse response = lotteryService.listAllBoughtTicket(userId);
 
-        return null;
+        return ResponseEntity.ok().body(response);
     }
 
     /*

@@ -4,12 +4,14 @@ import com.kbtg.bootcamp.posttest.dao.entity.Lottery;
 import com.kbtg.bootcamp.posttest.dao.entity.UserTicket;
 import com.kbtg.bootcamp.posttest.dao.repository.LotteryRepository;
 import com.kbtg.bootcamp.posttest.dao.repository.UserTicketRepository;
+import com.kbtg.bootcamp.posttest.dto.BoughLotteryResponse;
 import com.kbtg.bootcamp.posttest.dto.LotteryRequestDto;
 import com.kbtg.bootcamp.posttest.exception.BadRequestException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -79,5 +81,25 @@ public class LotteryService {
     private void decreaseLotteryAmount(Lottery lottery) {
         lottery.setAmount(lottery.getAmount() - 1);
         lotteryRepository.save(lottery);
+    }
+
+    public BoughLotteryResponse listAllBoughtTicket(Long userId) {
+        UserTicket userTicket = userTicketRepository.findById(userId)
+                .orElseThrow(() -> new BadRequestException(""));
+
+        List<Lottery> ticketList = userTicket.getTickets();
+        List<String> stringList = new ArrayList<>();
+        double cost = 0;
+        // wrap to string
+        for (Lottery ticket : ticketList) {
+            stringList.add(ticket.getTicket());
+            cost += ticket.getPrice();
+        }
+
+        return new BoughLotteryResponse(
+                stringList,
+                stringList.size(),
+                cost
+        );
     }
 }
