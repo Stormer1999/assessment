@@ -45,7 +45,6 @@ public class LotteryController {
     @PostMapping("/users/{userId}/lotteries/{ticketId}")
     public ResponseEntity<TicketIdResponseDto> buyLottery(@PathVariable("userId") Long userId,
                                                           @PathVariable("ticketId") String ticketId) {
-        // return ticketId from db
         Long boughtUserId = lotteryService.buyLotteryTicket(userId, ticketId);
         TicketIdResponseDto response = new TicketIdResponseDto(String.valueOf(boughtUserId));
 
@@ -53,11 +52,12 @@ public class LotteryController {
     }
 
     /*
-        EXP04: As a user, I want to list all my lottery tickets So that I can see which one I have already bought and it cost
+        EXP04: As a user, I want to list all my lottery tickets
+        So that I can see which one I have already bought and it cost
      */
     @GetMapping("/users/{userId}/lotteries")
     public ResponseEntity<PurchasedLotteriesResponse> listAllBoughtLottery(@PathVariable("userId") Long userId) {
-        PurchasedLotteriesResponse response = lotteryService.listAllPurchasedTicket(userId);
+        PurchasedLotteriesResponse response = lotteryService.listAllPurchasedTicketByUserId(userId);
 
         return ResponseEntity.ok().body(response);
     }
@@ -66,9 +66,11 @@ public class LotteryController {
         EXP05: As a user, I want to sell back my lottery tickets So that I can get my money back
      */
     @DeleteMapping("/users/{userId}/lotteries/{ticketId}")
-    public String sellLottery(@PathVariable("userId") Long userId,
-                              @PathVariable("ticketId") Long ticketId) {
+    public ResponseEntity<TicketResponseDto> sellLottery(@PathVariable("userId") Long userId,
+                                                         @PathVariable("ticketId") String ticketId) {
+        String soldBackTicketId = lotteryService.sellBackTicket(userId, ticketId);
+        TicketResponseDto response = new TicketResponseDto(soldBackTicketId);
 
-        return null;
+        return ResponseEntity.ok().body(response);
     }
 }

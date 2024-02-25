@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -43,7 +44,7 @@ public class LotteryService {
     }
 
     public List<String> listAllLotteryTicket() {
-        List<Lottery> lotteryList = lotteryRepository.findAll();
+        List<Lottery> lotteryList = lotteryRepository.findAllByOrderByIdAsc();
 
         return wrapLotteryListToStringList(lotteryList);
     }
@@ -52,7 +53,7 @@ public class LotteryService {
     public Long buyLotteryTicket(Long userId, String ticketId) {
         try {
             // check lottery existing
-            Lottery lottery = lotteryRepository.findAllByTicket(ticketId)
+            Lottery lottery = lotteryRepository.findAllByTicketOrderByTicket(ticketId)
                     .orElseThrow(() -> new BadRequestException("ticketId: " + ticketId + "is not exists"));
 
             // Retrieve user ticket
@@ -81,7 +82,7 @@ public class LotteryService {
         }
     }
 
-    public PurchasedLotteriesResponse listAllPurchasedTicket(Long userId) {
+    public PurchasedLotteriesResponse listAllPurchasedTicketByUserId(Long userId) {
         UserTicket userTicket = userTicketRepository.findById(userId)
                 .orElseThrow(() -> new BadRequestException("user not found"));
 
@@ -98,6 +99,22 @@ public class LotteryService {
                 stringList.size(),
                 totalCost
         );
+    }
+
+    public String sellBackTicket(Long userId, String ticketId) {
+        // check user is existing
+        Optional<UserTicket> userTicket = userTicketRepository.findById(userId);
+        if (userTicket.isEmpty()) {
+            throw new BadRequestException("userId:" + userId + " is not exists");
+        }
+
+        // remove lottery ticket by setting key to null
+        Lottery lotto = lotteryRepository.findAllByTicketOrderByTicket(ticketId)
+                .orElseThrow(() -> new BadRequestException("ticketId: " + ticketId + " is not exists"));
+        lotto.setUserTicket(null);
+        lotteryRepository.save(lotto);
+
+        return ticketId;
     }
 
     private List<String> wrapLotteryListToStringList(List<Lottery> lotteryList) {

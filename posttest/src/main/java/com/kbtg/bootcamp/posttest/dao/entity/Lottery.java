@@ -26,7 +26,6 @@ public class Lottery {
     @Column(name = "amount")
     private Integer amount;
 
-    //    @ManyToOne
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_ticket_id")
     private UserTicket userTicket;
