@@ -14,11 +14,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @Slf4j
 public class LotteryService {
+
+    private static final String USER_NOT_EXISTS_ERR_MESSAGE = "userId: %d is not exists";
+
+    private static final String TICKET_NOT_EXISTS_ERR_MESSAGE = "ticketId: %s is not exists";
 
     private final LotteryRepository lotteryRepository;
 
@@ -54,11 +57,11 @@ public class LotteryService {
         try {
             // check lottery existing
             Lottery lottery = lotteryRepository.findAllByTicketOrderByTicket(ticketId)
-                    .orElseThrow(() -> new BadRequestException("ticketId: " + ticketId + "is not exists"));
+                    .orElseThrow(() -> new BadRequestException(String.format(TICKET_NOT_EXISTS_ERR_MESSAGE, ticketId)));
 
             // Retrieve user ticket
             UserTicket userTicket = userTicketRepository.findById(userId)
-                    .orElseThrow(() -> new BadRequestException("userId: " + userId + " is not exists"));
+                    .orElseThrow(() -> new BadRequestException(String.format(USER_NOT_EXISTS_ERR_MESSAGE, userId)));
 
             // check amount should lower than 1
             if (lottery.getAmount() < 1) {
@@ -69,7 +72,7 @@ public class LotteryService {
             List<Lottery> lotteryList = userTicket.getTickets();
             lotteryList.add(lottery);
 
-            // update lottery which user just bought
+            // update lottery which user just bought (decrease amount)
             int newAmount = lottery.getAmount() - 1;
             lottery.setAmount(newAmount);
             lottery.setUserTicket(userTicket);
@@ -84,7 +87,7 @@ public class LotteryService {
 
     public PurchasedLotteriesResponse listAllPurchasedTicketByUserId(Long userId) {
         UserTicket userTicket = userTicketRepository.findById(userId)
-                .orElseThrow(() -> new BadRequestException("user not found"));
+                .orElseThrow(() -> new BadRequestException(String.format(USER_NOT_EXISTS_ERR_MESSAGE, userId)));
 
         List<Lottery> lotteryList = userTicket.getTickets();
         List<String> stringList = wrapLotteryListToStringList(lotteryList);
@@ -103,18 +106,17 @@ public class LotteryService {
 
     public String sellBackTicket(Long userId, String ticketId) {
         // check user is existing
-        Optional<UserTicket> userTicket = userTicketRepository.findById(userId);
-        if (userTicket.isEmpty()) {
-            throw new BadRequestException("userId:" + userId + " is not exists");
-        }
+        UserTicket userTicket = userTicketRepository.findById(userId)
+                .orElseThrow(() -> new BadRequestException(String.format(USER_NOT_EXISTS_ERR_MESSAGE, userId)));
 
-        // remove lottery ticket by setting key to null
-        Lottery lotto = lotteryRepository.findAllByTicketOrderByTicket(ticketId)
-                .orElseThrow(() -> new BadRequestException("ticketId: " + ticketId + " is not exists"));
-        lotto.setUserTicket(null);
-        lotteryRepository.save(lotto);
+        // remove user sell back ticket by set foreign-key to null
+        Lottery updateLottery = lotteryRepository
+                .findAllByTicketAndUserTicketOrderByTicket(ticketId, userTicket)
+                .orElseThrow(() -> new BadRequestException(String.format(TICKET_NOT_EXISTS_ERR_MESSAGE, ticketId)));
+        updateLottery.setUserTicket(null);
+        lotteryRepository.save(updateLottery);
 
-        return ticketId;
+        return updateLottery.getTicket();
     }
 
     private List<String> wrapLotteryListToStringList(List<Lottery> lotteryList) {
