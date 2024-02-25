@@ -56,11 +56,8 @@ public class LotteryController {
         EXP04: As a user, I want to list all my lottery tickets So that I can see which one I have already bought and it cost
      */
     @GetMapping("/users/{userId}/lotteries")
-    public ResponseEntity<BoughLotteryResponse> listAllBoughtLottery(@PathVariable("userId") Long userId) {
-        // ["000001","000002","123456"]
-        //count = number
-        //cost = number
-        BoughLotteryResponse response = lotteryService.listAllBoughtTicket(userId);
+    public ResponseEntity<PurchasedLotteriesResponse> listAllBoughtLottery(@PathVariable("userId") Long userId) {
+        PurchasedLotteriesResponse response = lotteryService.listAllPurchasedTicket(userId);
 
         return ResponseEntity.ok().body(response);
     }

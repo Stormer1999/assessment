@@ -4,9 +4,10 @@ import com.kbtg.bootcamp.posttest.dao.entity.Lottery;
 import com.kbtg.bootcamp.posttest.dao.entity.UserTicket;
 import com.kbtg.bootcamp.posttest.dao.repository.LotteryRepository;
 import com.kbtg.bootcamp.posttest.dao.repository.UserTicketRepository;
-import com.kbtg.bootcamp.posttest.dto.BoughLotteryResponse;
 import com.kbtg.bootcamp.posttest.dto.LotteryRequestDto;
+import com.kbtg.bootcamp.posttest.dto.PurchasedLotteriesResponse;
 import com.kbtg.bootcamp.posttest.exception.BadRequestException;
+import com.kbtg.bootcamp.posttest.exception.DatabaseErrorException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,7 +43,9 @@ public class LotteryService {
     }
 
     public List<String> listAllLotteryTicket() {
-        return lotteryRepository.findAllValidLotteryTicket();
+        List<Lottery> lotteryList = lotteryRepository.findAll();
+
+        return wrapLotteryListToStringList(lotteryList);
     }
 
     @Transactional
@@ -56,50 +59,53 @@ public class LotteryService {
             UserTicket userTicket = userTicketRepository.findById(userId)
                     .orElseThrow(() -> new BadRequestException("userId: " + userId + " is not exists"));
 
+            // check amount should lower than 1
+            if (lottery.getAmount() < 1) {
+                throw new BadRequestException("ticket is run out of");
+            }
+
             // add new lottery ticket to old lotteries
             List<Lottery> lotteryList = userTicket.getTickets();
             lotteryList.add(lottery);
 
             // update lottery which user just bought
-//            userTicket.setTickets(lotteryList);
-//            userTicketRepository.save(userTicket);
             int newAmount = lottery.getAmount() - 1;
             lottery.setAmount(newAmount);
             lottery.setUserTicket(userTicket);
             lotteryRepository.save(lottery);
 
-            // decrease amount of lottery
-//            decreaseLotteryAmount(lottery);
-
             return userTicket.getId();
         } catch (Exception ex) {
             log.error("buy lottery ticket failed: {}", ex.getMessage());
-            throw new RuntimeException(ex.getMessage());
+            throw new DatabaseErrorException(ex.getMessage());
         }
     }
 
-    private void decreaseLotteryAmount(Lottery lottery) {
-        lottery.setAmount(lottery.getAmount() - 1);
-        lotteryRepository.save(lottery);
-    }
-
-    public BoughLotteryResponse listAllBoughtTicket(Long userId) {
+    public PurchasedLotteriesResponse listAllPurchasedTicket(Long userId) {
         UserTicket userTicket = userTicketRepository.findById(userId)
-                .orElseThrow(() -> new BadRequestException(""));
+                .orElseThrow(() -> new BadRequestException("user not found"));
 
-        List<Lottery> ticketList = userTicket.getTickets();
-        List<String> stringList = new ArrayList<>();
-        double cost = 0;
-        // wrap to string
-        for (Lottery ticket : ticketList) {
-            stringList.add(ticket.getTicket());
-            cost += ticket.getPrice();
-        }
+        List<Lottery> lotteryList = userTicket.getTickets();
+        List<String> stringList = wrapLotteryListToStringList(lotteryList);
 
-        return new BoughLotteryResponse(
+        // calculate total cost of all purchased tickets
+        double totalCost = lotteryList.stream()
+                .mapToDouble(Lottery::getPrice)
+                .sum();
+
+        return new PurchasedLotteriesResponse(
                 stringList,
                 stringList.size(),
-                cost
+                totalCost
         );
+    }
+
+    private List<String> wrapLotteryListToStringList(List<Lottery> lotteryList) {
+        List<String> stringList = new ArrayList<>();
+        for (Lottery lottery : lotteryList) {
+            stringList.add(lottery.getTicket());
+        }
+
+        return stringList;
     }
 }
