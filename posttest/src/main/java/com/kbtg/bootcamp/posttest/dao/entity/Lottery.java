@@ -17,7 +17,7 @@ public class Lottery {
     private Long id;
 
     @Column(name = "ticket", unique = true)
-    @Size(min = 6, max = 6, message = "tickets size must be 6 characters")
+    @Size(min = 6, max = 6, message = "tickets size must have 6 digits")
     private String ticket;
 
     @Column(name = "price")
@@ -27,6 +27,6 @@ public class Lottery {
     private Integer amount;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_ticket_id")
+    @JoinColumn(name = "user_ticket_user_id")
     private UserTicket userTicket;
 }

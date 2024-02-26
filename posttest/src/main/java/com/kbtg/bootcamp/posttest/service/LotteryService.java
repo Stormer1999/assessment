@@ -19,7 +19,7 @@ import java.util.List;
 @Slf4j
 public class LotteryService {
 
-    private static final String USER_NOT_EXISTS_ERR_MESSAGE = "userId: %d is not exists";
+    private static final String USER_NOT_EXISTS_ERR_MESSAGE = "userId: %s is not exists";
 
     private static final String TICKET_NOT_EXISTS_ERR_MESSAGE = "ticketId: %s is not exists";
 
@@ -53,14 +53,14 @@ public class LotteryService {
     }
 
     @Transactional
-    public Long buyLotteryTicket(Long userId, String ticketId) {
+    public Long buyLotteryTicket(String userId, String ticketId) {
         try {
             // check lottery existing
             Lottery lottery = lotteryRepository.findAllByTicketOrderByTicket(ticketId)
                     .orElseThrow(() -> new BadRequestException(String.format(TICKET_NOT_EXISTS_ERR_MESSAGE, ticketId)));
 
             // Retrieve user ticket
-            UserTicket userTicket = userTicketRepository.findById(userId)
+            UserTicket userTicket = userTicketRepository.findByUserId(userId)
                     .orElseThrow(() -> new BadRequestException(String.format(USER_NOT_EXISTS_ERR_MESSAGE, userId)));
 
             // check amount should lower than 1
@@ -85,8 +85,8 @@ public class LotteryService {
         }
     }
 
-    public PurchasedLotteriesResponse listAllPurchasedTicketByUserId(Long userId) {
-        UserTicket userTicket = userTicketRepository.findById(userId)
+    public PurchasedLotteriesResponse listAllPurchasedTicketByUserId(String userId) {
+        UserTicket userTicket = userTicketRepository.findByUserId(userId)
                 .orElseThrow(() -> new BadRequestException(String.format(USER_NOT_EXISTS_ERR_MESSAGE, userId)));
 
         List<Lottery> lotteryList = userTicket.getTickets();
@@ -104,9 +104,10 @@ public class LotteryService {
         );
     }
 
-    public String sellBackTicket(Long userId, String ticketId) {
+    @Transactional
+    public String sellBackTicket(String userId, String ticketId) {
         // check user is existing
-        UserTicket userTicket = userTicketRepository.findById(userId)
+        UserTicket userTicket = userTicketRepository.findByUserId(userId)
                 .orElseThrow(() -> new BadRequestException(String.format(USER_NOT_EXISTS_ERR_MESSAGE, userId)));
 
         // remove user sell back ticket by set foreign-key to null
