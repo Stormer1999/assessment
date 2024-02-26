@@ -2,7 +2,6 @@ package com.kbtg.bootcamp.posttest.dto;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import org.springframework.format.annotation.NumberFormat;
 
 public record LotteryRequestDto(
         @NotNull(message = "tickets is required")

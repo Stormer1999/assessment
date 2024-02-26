@@ -8,6 +8,7 @@ import com.kbtg.bootcamp.posttest.dto.LotteryRequestDto;
 import com.kbtg.bootcamp.posttest.dto.PurchasedLotteriesResponse;
 import com.kbtg.bootcamp.posttest.exception.BadRequestException;
 import com.kbtg.bootcamp.posttest.exception.DatabaseErrorException;
+import jakarta.persistence.PersistenceException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,7 +48,7 @@ public class LotteryService {
     }
 
     public List<String> listAllLotteryTicket() {
-        List<Lottery> lotteryList = lotteryRepository.findAllByOrderByIdAsc();
+        List<Lottery> lotteryList = lotteryRepository.findAllByOrderByTicketAsc();
 
         return wrapLotteryListToStringList(lotteryList);
     }
@@ -68,10 +69,6 @@ public class LotteryService {
                 throw new BadRequestException("ticket is run out of");
             }
 
-            // add new lottery ticket to old lotteries
-            List<Lottery> lotteryList = userTicket.getTickets();
-            lotteryList.add(lottery);
-
             // update lottery which user just bought (decrease amount)
             int newAmount = lottery.getAmount() - 1;
             lottery.setAmount(newAmount);
@@ -79,7 +76,7 @@ public class LotteryService {
             lotteryRepository.save(lottery);
 
             return userTicket.getId();
-        } catch (Exception ex) {
+        } catch (PersistenceException ex) {
             log.error("buy lottery ticket failed: {}", ex.getMessage());
             throw new DatabaseErrorException(ex.getMessage());
         }

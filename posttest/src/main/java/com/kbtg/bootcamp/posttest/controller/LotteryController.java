@@ -2,11 +2,9 @@ package com.kbtg.bootcamp.posttest.controller;
 
 import com.kbtg.bootcamp.posttest.dao.entity.Lottery;
 import com.kbtg.bootcamp.posttest.dto.*;
-import com.kbtg.bootcamp.posttest.exception.BadRequestException;
 import com.kbtg.bootcamp.posttest.service.LotteryService;
 import com.kbtg.bootcamp.posttest.utils.ValidationUtils;
 import jakarta.validation.Valid;
-import org.apache.logging.log4j.util.Strings;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

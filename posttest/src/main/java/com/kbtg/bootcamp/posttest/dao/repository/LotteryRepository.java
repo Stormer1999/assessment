@@ -11,7 +11,7 @@ import java.util.Optional;
 @Repository
 public interface LotteryRepository extends JpaRepository<Lottery, Long> {
 
-    List<Lottery> findAllByOrderByIdAsc();
+    List<Lottery> findAllByOrderByTicketAsc();
 
     Optional<Lottery> findAllByTicketOrderByTicket(String ticketId);
 
