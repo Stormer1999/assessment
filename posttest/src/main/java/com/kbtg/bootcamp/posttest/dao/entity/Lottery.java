@@ -4,11 +4,15 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "lottery")
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class Lottery {
 
@@ -17,7 +21,7 @@ public class Lottery {
     private Long id;
 
     @Column(name = "ticket", unique = true)
-    @Size(min = 6, max = 6, message = "tickets size must be 6 characters")
+    @Size(min = 6, max = 6, message = "tickets size must have 6 digits")
     private String ticket;
 
     @Column(name = "price")
@@ -26,8 +30,7 @@ public class Lottery {
     @Column(name = "amount")
     private Integer amount;
 
-    //    @ManyToOne
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_ticket_id")
+    @JoinColumn(name = "user_ticket_user_id")
     private UserTicket userTicket;
 }
